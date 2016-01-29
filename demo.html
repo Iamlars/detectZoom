@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>demo</title>
+    <style>
+    body[zoom='scale']:before{
+      content: '您的网页处于缩放状态，请按 Ctrl+0 恢复到浏览器默认大小';
+      z-index: 9999;
+      position: fixed;
+      left:0;
+      top:0;
+      width: 100%;
+      line-height: 44px;
+      background: rgba(50,57,65,0.9);
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+      font-family: 黑体;
+      color: #fff;
+    }
+    </style>
+  </head>
+  <body>
+
+  <script src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+  <script src="jquery.detectZoom.js"></script>
+</body>
+</html>
