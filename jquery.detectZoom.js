@@ -8,6 +8,13 @@
     this.deviceXDPI = screen.deviceXDPI;
     this.ua = navigator.userAgent.toLowerCase();
     this.isIE = ~this.ua.indexOf('msie') && this.deviceXDPI;
+    this.type = this.checkType();
+    this.methods = {
+      devicePixelRatio: function(){return window.devicePixelRatio;},
+      logicalXDPI:function(){return  this.deviceXDPI / this.screen.logicalXDP},
+      innerWidth: function(){return this.outerWidth / window.innerWidth},
+    };
+    this.timer = null;
 
     this.mousewheel();
     this.keydown();
@@ -15,17 +22,21 @@
 
   }
 
-  DetectZoom.prototype.getRatio = function () {
+  // 通过提前判定需要使用的属性，避免重复判断
+  DetectZoom.prototype.checkType = function () {
     if(window.devicePixelRatio){
-       return window.devicePixelRatio;
+       return 'devicePixelRatio';
     }
     if (this.isIE && this.screen.logicalXDPI) {
-      return this.deviceXDPI / this.screen.logicalXDPI;
+      return 'logicalXDPI';
     }
     if (this.outerWidth && window.innerWidth) {
-      return this.outerWidth / window.innerWidth;
+      return 'innerWidth';
     }
-    return false;
+  };
+
+  DetectZoom.prototype.getRatio = function () {
+    return this.methods[this.type]();
   };
 
   DetectZoom.prototype.setRatio = function () {
@@ -35,11 +46,21 @@
     },0);
   };
 
+  // 因为鼠标滚轮和按键操作都是频繁触发的，应该降低触发处理函数的频率
+  DetectZoom.prototype.debounce = function (time,func) {
+    var that = this,
+        args = arguments;
+    clearTimeout(that.timer);
+    that.timer = setTimeout(function(){
+      func.call(that);
+    }, time);
+  };
+
   DetectZoom.prototype.mousewheel = function () {
     var that = this;
     $(document).on('mousewheel DOMMouseScroll',function(e){
       if(e.ctrlKey){
-        that.setRatio();
+        that.debounce(200,that.setRatio);
       }
     })
   };
@@ -52,8 +73,8 @@
           case 48:/*0*/
           case 96:/*0*/
           case 187:/*+*/
-          case 189:/*-*/
-          that.setRatio();break;
+          case 189:
+          that.debounce(200,that.setRatio);break;
         }
       }
     })
